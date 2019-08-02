@@ -90,7 +90,7 @@ const start = function(options) {
       .then(res => {
         console.log('------所有文件上传完成!-------\n')
         sftp.end()
-        if (config.webhook && config.webhook.url) {
+        if (options.webhook && options.webhook.url) {
           return webhook(options.webhook)
         }
         return res
