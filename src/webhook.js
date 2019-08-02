@@ -1,4 +1,4 @@
-const requestHandle = require('request')
+const axios = require('axios')
 
 const webhook = option => {
   let body = option.content || {
@@ -7,24 +7,7 @@ const webhook = option => {
       content: option.text
     }
   }
-  requestHandle(
-    {
-      url: option.url,
-      method: 'post',
-      json: true,
-      headers: {
-        'content-type': 'application/json'
-      },
-      body
-    },
-    function(err, res) {
-      if (!err && res.statusCode == 200) {
-        response.setHeader('content-type', 'application/json')
-        response.setStatusCode(200)
-        response.send('ok')
-      }
-    }
-  )
+  return axios.post(option.url, body)
 }
 
 module.exports = webhook
