@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/QuincyX/sftp-deploy/issues"
   },
-  "homepage": "https://github.com/QuincyX/sftp-deploy#readme"
+  "homepage": "https://github.com/QuincyX/sftp-deploy#readme",
+  "dependencies": {
+    "ssh2-sftp-client": "^2.5.0"
+  }
 }
