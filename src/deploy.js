@@ -1,5 +1,6 @@
 const Client = require('ssh2-sftp-client')
 const fs = require('fs')
+import webhook from './webhook'
 const registConf = require('./sftp.config.js')
 const sftp = new Client()
 const staticFilesPath = {
@@ -84,20 +85,21 @@ const start = function(options) {
         console.log(`准备创建项目根路目录${config.project_remote_path}`)
         sftp.mkdir(config.project_remote_path, false) //false:不设置递归创建文件夹
         console.log('正在上传...')
-        uploadFile()
-          .then(() => {
-            console.log('------所有文件上传完成!-------\n')
-            sftp.end()
-            resolve()
-          })
-          .catch(() => {
-            console.error('------上传失败,请检查!-------\n')
-            sftp.end()
-            reject()
-          })
+        return uploadFile()
+      })
+      .then(res => {
+        console.log('------所有文件上传完成!-------\n')
+        sftp.end()
+        if (config.webhook && config.webhook.url) {
+          return webhook(options.webhook)
+        }
+        return res
+      })
+      .then(() => {
+        resolve()
       })
       .catch(err => {
-        console.error(err, 'catch error')
+        console.error('------上传失败,请检查!-------\n')
         sftp.end()
         reject(err)
       })

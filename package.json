@@ -1,6 +1,6 @@
 {
-  "name": "sftp-deploy",
-  "version": "1.0.0",
+  "name": "@quincyx/sftp-deploy",
+  "version": "0.0.1",
   "description": "Quincy's sftp deploy tool",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/QuincyX/sftp-deploy#readme",
   "dependencies": {
+    "request": "^2.88.0",
     "ssh2-sftp-client": "^2.5.0"
-  }
+  },
+  "devDependencies": {}
 }

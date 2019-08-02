@@ -5,15 +5,15 @@
 - 引入
 
 ```javascript
-npm i @quincy/sftp-deploy
+npm i @quincyx/sftp-deploy
 ```
 
 - 使用
 
 ```javascript
-const ssd = require('simple-sftp-deploy')
+const SD = require('@quincyx/sftp-deploy')
 const path = require('path')
-ssd.start({
+SD.deploy({
   remote_path: '/data/www/xxx', //服务器项目根路径
   assets_path: path.resolve(__dirname, './dist'), //编译后资源文件夹名称(需上传的文件夹)
   host: 'xxx.xxx.xxx.xxx', //ftp服务器ip
