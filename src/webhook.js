@@ -1,6 +1,12 @@
 const requestHandle = require('request')
 
 const webhook = option => {
+  let body = option.content || {
+    msgtype: 'text',
+    text: {
+      content: option.text
+    }
+  }
   requestHandle(
     {
       url: option.url,
@@ -9,12 +15,7 @@ const webhook = option => {
       headers: {
         'content-type': 'application/json'
       },
-      body: {
-        msgtype: 'text',
-        text: {
-          content: option.text
-        }
-      }
+      body
     },
     function(err, res) {
       if (!err && res.statusCode == 200) {
@@ -26,4 +27,4 @@ const webhook = option => {
   )
 }
 
-export default webhook
+module.exports = webhook

@@ -1,6 +1,6 @@
 const Client = require('ssh2-sftp-client')
 const fs = require('fs')
-import webhook from './webhook'
+const webhook = require('./webhook')
 const registConf = require('./sftp.config.js')
 const sftp = new Client()
 const staticFilesPath = {
