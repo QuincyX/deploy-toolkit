@@ -5,7 +5,7 @@
 - 引入
 
 ```javascript
-npm i @quincyx/sftp-deploy
+npm i @quincyx/deploy-toolkit -D
 ```
 
 - 使用

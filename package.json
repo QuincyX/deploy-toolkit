@@ -1,25 +1,25 @@
 {
-  "name": "@quincyx/sftp-deploy",
-  "version": "0.0.7",
-  "description": "Quincy's sftp deploy tool",
+  "name": "@quincyx/deploy-toolkit",
+  "version": "0.0.9",
+  "description": "Quincy's sftp deploy toolkit",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/QuincyX/sftp-deploy.git"
+    "url": "git+ssh://git@github.com/QuincyX/deploy-toolkit.git"
   },
   "keywords": [
     "sftp",
     "deploy"
   ],
   "author": "likequincy@outlook.com",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/QuincyX/sftp-deploy/issues"
+    "url": "https://github.com/QuincyX/deploy-toolkit/issues"
   },
-  "homepage": "https://github.com/QuincyX/sftp-deploy#readme",
+  "homepage": "https://github.com/QuincyX/deploy-toolkit#readme",
   "dependencies": {
     "axios": "^0.19.0",
     "ssh2-sftp-client": "^2.5.0"
