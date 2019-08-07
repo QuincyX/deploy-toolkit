@@ -11,6 +11,7 @@ npm i @quincyx/deploy-toolkit -D
 - 创建脚本
 
 在项目根目录下创建文件 `deploy.js`
+
 ```javascript
 const path = require('path')
 const { deploy, webhook } = require('@quincyx/sftp-deploy')
@@ -24,9 +25,9 @@ deploy({
   remotePath: '/www/web/',
   localPath: path.resolve(__dirname, './dist'),
   backupRemotePath: false
-}).then(() => {
+})
+  .then(() => {
     const msg = `update project ok`
-
     return webhook({
       enable: true,
       url: '',
@@ -50,9 +51,9 @@ deploy({
   })
 ```
 
-- 添加到npm script
+- 添加到 npm script
 
-在package.json中添加部署脚本
+在 package.json 中添加部署脚本
 
 ```json
 "scripts": {
