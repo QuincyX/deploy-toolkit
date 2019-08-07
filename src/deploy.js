@@ -1,8 +1,7 @@
 const Client = require('ssh2-sftp-client')
 const fs = require('fs')
-const webhook = require('./webhook')
-const registConf = require('./sftp.config.js')
 const sftp = new Client()
+
 const staticFilesPath = {
   folder: {
     local: '',
@@ -71,31 +70,28 @@ function uploadFile() {
   console.log('开始上传...')
   return Promise.all(tasks)
 }
-const start = function(options) {
+const deploy = function(options) {
   return new Promise((resolve, reject) => {
-    const config = registConf(options)
     staticFilesPath.folder = {
-      local: config.assets_path,
-      remote: config.remote_path
+      local: options.localPath,
+      remote: options.remotePath
     }
     sftp
-      .connect(config.options)
+      .connect(options.server)
       .then(data => {
         console.log('ftp文件服务器连接成功')
-        console.log(`准备创建项目根路目录${config.project_remote_path}`)
-        sftp.mkdir(config.project_remote_path, false) //false:不设置递归创建文件夹
+        if (options.backupRemotePath) {
+          const bak_name = `${options.remotePath}-${new Date().getTime()}`
+          sftp.rename(options.remotePath, bak_name)
+        }
+        console.log(`准备创建项目根路目录${options.remotePath}`)
+        sftp.mkdir(options.remotePath, false) //false:不设置递归创建文件夹
         console.log('正在上传...')
         return uploadFile()
       })
       .then(res => {
         console.log('------所有文件上传完成!-------\n')
         sftp.end()
-        if (options.webhook && options.webhook.url) {
-          return webhook(options.webhook)
-        }
-        return res
-      })
-      .then(() => {
         resolve()
       })
       .catch(err => {
@@ -106,4 +102,4 @@ const start = function(options) {
   })
 }
 
-module.exports = start
+module.exports = deploy
