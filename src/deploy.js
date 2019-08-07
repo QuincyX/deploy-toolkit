@@ -51,11 +51,13 @@ function uploadFile() {
   const tasks = localFileJson.map(item => {
     return new Promise((resolve, reject) => {
       if (item.type == 'folder') {
-        sftp.mkdir(item.remotePath, false),
-          then(res => {
+        sftp
+          .mkdir(item.remotePath, false)
+          .then(res => {
             console.log(`${item.localPath}目录创建成功`)
             resolve()
-          }).catch(err => {
+          })
+          .catch(err => {
             console.log(`${item.localPath}目录创建失败`)
             resolve()
           })
