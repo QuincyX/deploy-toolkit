@@ -11,14 +11,40 @@ npm i @quincyx/sftp-deploy
 - 使用
 
 ```javascript
-const SD = require('@quincyx/sftp-deploy')
 const path = require('path')
-SD.deploy({
-  remote_path: '/data/www/xxx', //服务器项目根路径
-  assets_path: path.resolve(__dirname, './dist'), //编译后资源文件夹名称(需上传的文件夹)
-  host: 'xxx.xxx.xxx.xxx', //ftp服务器ip
-  port: '22', //端口,可不填(默认22)
-  user: 'username', //ftp用户名
-  password: 'password' //ftp密码
-})
+const { deploy, webhook } = require('@quincyx/sftp-deploy')
+deploy({
+  server: {
+    host: '39.108.12.96',
+    port: '60022',
+    user: 'xuqichao',
+    password: '123456'
+  },
+  remotePath: '/opt/web/devmhealtt',
+  localPath: path.resolve(__dirname, './dist'),
+  backupRemotePath: false
+}).then(() => {
+    const msg = `update project ok`
+
+    return webhook({
+      enable: true,
+      url: '',
+      content: {
+        msgtype: 'markdown',
+        markdown: {
+          content: `<font color="info">项目更新/部署完成！</font>
+本次更新内容：
+> ${msg}
+
+[点击预览](https://devm.healtt.com)`
+        }
+      }
+    })
+  })
+  .then(res => {
+    console.log('deploy ok!')
+  })
+  .catch(err => {
+    console.log(err)
+  })
 ```
