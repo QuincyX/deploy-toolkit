@@ -2,25 +2,26 @@
 
 ## Usage
 
-- 引入
+- 引入依赖
 
 ```javascript
 npm i @quincyx/deploy-toolkit -D
 ```
 
-- 使用
+- 创建脚本
 
+在项目根目录下创建文件 `deploy.js`
 ```javascript
 const path = require('path')
 const { deploy, webhook } = require('@quincyx/sftp-deploy')
 deploy({
   server: {
-    host: '39.108.12.96',
-    port: '60022',
-    user: 'xuqichao',
-    password: '123456'
+    host: '0.0.0.0',
+    port: '22',
+    user: '',
+    password: ''
   },
-  remotePath: '/opt/web/devmhealtt',
+  remotePath: '/www/web/',
   localPath: path.resolve(__dirname, './dist'),
   backupRemotePath: false
 }).then(() => {
@@ -36,7 +37,7 @@ deploy({
 本次更新内容：
 > ${msg}
 
-[点击预览](https://devm.healtt.com)`
+[点击预览](https://www.baidu.com)`
         }
       }
     })
@@ -47,4 +48,15 @@ deploy({
   .catch(err => {
     console.log(err)
   })
+```
+
+- 添加到npm script
+
+在package.json中添加部署脚本
+
+```json
+"scripts": {
+  "build:test": "vue-cli-service build --mode test",
+  "deploy:test": "vue-cli-service build --mode test && node deploy.js"
+}
 ```
