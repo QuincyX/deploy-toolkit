@@ -29,7 +29,6 @@ deploy({
   .then(() => {
     const msg = `update project ok`
     return webhook({
-      enable: true,
       url: '',
       content: {
         msgtype: 'markdown',
