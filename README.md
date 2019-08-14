@@ -14,40 +14,37 @@ npm i @quincyx/deploy-toolkit -D
 
 ```javascript
 const path = require('path')
-const { deploy, webhook } = require('@quincyx/sftp-deploy')
-deploy({
+const deployTool = require('@quincyx/deploy-toolkit')
+
+const option = {
   server: {
     host: '0.0.0.0',
     port: '22',
     user: '',
-    password: ''
+    password: '',
+    remotePath: '/www/web',
+    localPath: path.resolve(__dirname, './dist'),
+    backupRemotePath: false,
+    deleteSubDir: false
   },
-  remotePath: '/www/web/',
-  localPath: path.resolve(__dirname, './dist'),
-  backupRemotePath: false
-})
-  .then(() => {
-    const msg = `update project ok`
-    return webhook({
-      url: '',
-      content: {
-        msgtype: 'markdown',
-        markdown: {
-          content: `<font color="info">项目更新/部署完成！</font>
-本次更新内容：
-> ${msg}
+  project: {
+    name: config.name,
+    version: config.version,
+    url: 'https://www.null.com'
+  },
+  git: {
+    enable: true,
+    version: 'patch'
+  },
+  webhook: {
+    enable: true,
+    type: 'work_wx',
+    key: 'work_wx_bot_key'
+  }
+}
 
-[点击预览](https://www.baidu.com)`
-        }
-      }
-    })
-  })
-  .then(res => {
-    console.log('deploy ok!')
-  })
-  .catch(err => {
-    console.log(err)
-  })
+deployTool.start(option)
+
 ```
 
 - 添加到 npm script
