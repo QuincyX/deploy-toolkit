@@ -44,14 +44,14 @@ function handleFilePath(obj, type) {
 /**
  * 上传文件
  **/
-function uploadFile(options) {
+function uploadFile(option) {
   Object.keys(staticFilesPath).forEach(key => {
     handleFilePath(staticFilesPath[key], key)
   })
   const tasks = localFileJson.map(item => {
     return new Promise(async (resolve, reject) => {
       if (item.type == 'folder') {
-        if (options.deleteSubDir) {
+        if (option.deleteSubDir) {
           await sftp.rmdir(item.remotePath, true).then(() => {
             console.log(`${item.remotePath}目录删除成功`)
           })
@@ -84,43 +84,57 @@ function uploadFile(options) {
   })
   return Promise.all(tasks)
 }
-let startTime = Date.now()
-const deploy = function(options) {
-  return new Promise((resolve, reject) => {
-    staticFilesPath.folder = {
-      local: options.localPath,
-      remote: options.remotePath
-    }
-    sftp
-      .connect(options.server)
-      .then(async data => {
-        startTime = Date.now()
-        console.log('ssh服务器连接成功！')
-        if (options.backupRemotePath) {
-          console.log(`备份原目录并创建新目录`)
-          const bak_name = `${options.remotePath}-${new Date().getTime()}`
-          await sftp.rename(options.remotePath, bak_name)
-          await sftp.mkdir(options.remotePath, false)
-        } else if (options.deleteRemotePath) {
-          await sftp.rmdir(options.remotePath, true)
-        }
-        console.log('开始上传...')
-        return uploadFile(options)
-      })
-      .then(res => {
-        console.log('------所有文件上传完成!-------\n')
-        console.log('上传文件耗时：');
 
-        sftp.end()
-        resolve()
-      })
-      .catch(err => {
-        console.error('------上传失败,请检查!-------\n')
-        console.error(err)
-        sftp.end()
-        reject(err)
-      })
-  })
+function getConnectConfig(option) {
+  return {
+    host: option.host,
+    port: option.port,
+    user: option.user,
+    password: option.password
+  }
 }
 
-module.exports = deploy
+async function backRemoteDir(option) {
+  console.log(`备份原目录并创建新目录`)
+  const bak_name = `${
+    staticFilesPath.folder.remotePath
+  }-${new Date().getTime()}`
+  await sftp.rename(staticFilesPath.folder.remotePath, bak_name)
+  await sftp.mkdir(staticFilesPath.folder.remotePath, false)
+}
+
+module.exports = option => {
+  return new Promise((resolve, reject) => {
+    staticFilesPath.folder = {
+      local: option.localPath,
+      remote: option.remotePath
+    }
+    if (option.host && option.user && option.remotePath && option.localPath) {
+      sftp
+        .connect(getConnectConfig(option))
+        .then(async data => {
+          console.log('ssh服务器连接成功！')
+          if (option.backupRemotePath) {
+            backRemoteDir()
+          } else if (option.deleteRemotePath) {
+            await sftp.rmdir(option.remotePath, true)
+          }
+          console.log('开始上传...')
+          return uploadFile(option)
+        })
+        .then(res => {
+          console.log('------所有文件上传完成!-------\n')
+          sftp.end()
+          resolve()
+        })
+        .catch(err => {
+          console.error('------上传失败,请检查!-------\n')
+          console.error(err)
+          sftp.end()
+          reject(err)
+        })
+    } else {
+      resolve()
+    }
+  })
+}

@@ -1,34 +1,34 @@
-const inquirer = require('inquirer')
 const process = require('child_process')
 
-const autoCommit = option => {
+function exec(val) {
   return new Promise((resolve, reject) => {
-    inquirer
-      .prompt([
-        {
-          name: 'commit',
-          message: 'commit message：',
-          type: 'input',
-          default: `commit at ${new Date()}`
-        }
-      ])
-      .then(answer => {
-        console.log('------自动执行git commit-------\n')
-        process.exec(
-          `git  add . && git commit -am "${answer.commit}"`,
-          function(error, stdout, stderr) {
-            if (error !== null) {
-              console.log('exec error: ' + error)
-              reject(error)
-            } else {
-              console.log(stdout)
-              console.log(stderr)
-              resolve()
-            }
-          }
-        )
-      })
+    process.exec(val, (error, stdout, stderr) => {
+      if (error) {
+        console.log('git exec error:')
+        console.log(error)
+        reject(error)
+      } else {
+        console.log(stdout)
+        console.log(stderr)
+        resolve(stdout)
+      }
+    })
   })
 }
-
-module.exports = { autoCommit }
+module.exports = (userData, option) => {
+  if (userData.msg && option.enable) {
+    return new Promise(async (resolve, reject) => {
+      console.log('------开始执行git commit-------\n')
+      const statusMsg = await exec('git status')
+      if (!statusMsg.includes('working tree clean')) {
+        await exec(`git add . && git commit -am "${userData.msg}"`)
+        if (option.version) {
+          await exec('npm version ' + option.version)
+        }
+      }
+      resolve()
+    })
+  } else {
+    return Promise.resolve()
+  }
+}
