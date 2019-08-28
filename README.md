@@ -20,12 +20,11 @@ const option = {
   server: {
     host: '0.0.0.0',
     port: '22',
-    user: '',
+    username: '',
     password: '',
+    privateKey:'',
     remotePath: '/www/web',
     localPath: path.resolve(__dirname, './dist'),
-    backupRemotePath: false,
-    deleteSubDir: false
   },
   project: {
     name: config.name,
