@@ -1,17 +1,22 @@
 const Client = require('ssh2-sftp-client')
 const fs = require('fs')
 const sftp = new Client()
-
+const print = require('./util/console')
+const node_ssh = require('node-ssh')
+const ssh = new node_ssh()
+const ansiEscapes = require('ansi-escapes')
 const staticFilesPath = {
   folder: {
     local: '',
     remote: ''
   }
 }
-/**
- * 处理文件路径，循环所有文件，如果是图片需要读取成Buffer类型
- **/
+let config = {
+  localPath: '',
+  remotePath: ''
+}
 let localFileJson = []
+
 function handleFilePath(obj, type) {
   const { local, remote } = obj
   const files = fs.readdirSync(local)
@@ -25,7 +30,6 @@ function handleFilePath(obj, type) {
     let item = {
       type: type,
       file: file,
-      // localPath: type !== "img" ? _lp : fs.readFileSync(_lp),
       localPath: _lp,
       remotePath: `${remote}/${file}`
     }
@@ -53,30 +57,30 @@ function uploadFile(option) {
       if (item.type == 'folder') {
         if (option.deleteSubDir) {
           await sftp.rmdir(item.remotePath, true).then(() => {
-            console.log(`${item.remotePath}目录删除成功`)
+            printDetail(`${item.remotePath}目录删除成功`)
           })
         }
         sftp
           .mkdir(item.remotePath, false)
           .then(res => {
-            console.log(`${item.remotePath}目录创建成功`)
+            printDetail(`${item.remotePath}目录创建成功`)
             resolve()
           })
           .catch(err => {
-            console.log(`${item.remotePath}目录创建失败`)
-            console.log(err)
+            printDetail(`${item.remotePath}目录创建失败`)
+            printDetail(err)
             resolve()
           })
       } else {
         sftp
           .fastPut(item.localPath, item.remotePath)
           .then(() => {
-            console.log(`${item.remotePath}上传完成`)
+            printDetail(`${item.remotePath}上传完成`)
             resolve()
           })
           .catch(err => {
-            console.log(`${item.remotePath}上传失败`)
-            console.log(err)
+            printDetail(`${item.remotePath}上传失败`)
+            printDetail(err)
             reject()
           })
       }
@@ -85,17 +89,24 @@ function uploadFile(option) {
   return Promise.all(tasks)
 }
 
+function printDetail(val) {
+  if (config.isDetailed) {
+    print.info(val)
+  }
+}
+
 function getConnectConfig(option) {
   return {
     host: option.host,
     port: option.port,
-    user: option.user,
-    password: option.password
+    username: option.username,
+    password: option.password,
+    privateKey: option.privateKey
   }
 }
 
 async function backRemoteDir(option) {
-  console.log(`备份原目录并创建新目录`)
+  print.info(`备份原目录并创建新目录`)
   const bak_name = `${
     staticFilesPath.folder.remotePath
   }-${new Date().getTime()}`
@@ -104,37 +115,49 @@ async function backRemoteDir(option) {
 }
 
 module.exports = option => {
-  return new Promise((resolve, reject) => {
-    staticFilesPath.folder = {
-      local: option.localPath,
-      remote: option.remotePath
-    }
-    if (option.host && option.user && option.remotePath && option.localPath) {
-      sftp
-        .connect(getConnectConfig(option))
-        .then(async data => {
-          console.log('ssh服务器连接成功！')
-          if (option.backupRemotePath) {
-            backRemoteDir()
-          } else if (option.deleteRemotePath) {
-            await sftp.rmdir(option.remotePath, true)
+  config = option
+  staticFilesPath.folder = {
+    local: option.localPath,
+    remote: option.remotePath
+  }
+  const failed = []
+  const successful = []
+  if (option.host && option.username && option.remotePath && option.localPath) {
+    return ssh
+      .connect(getConnectConfig(option))
+      .then(() => {
+        print.success('ssh服务器连接成功！\n')
+        console.log('')
+        return ssh.putDirectory(option.localPath, option.remotePath, {
+          recursive: true,
+          concurrency: 10,
+          tick: (localPath, remotePath, error) => {
+            if (error) {
+              failed.push(localPath)
+            } else {
+              successful.push(localPath)
+              print.progress('正在上传 ' + localPath)
+            }
           }
-          console.log('开始上传...')
-          return uploadFile(option)
         })
-        .then(res => {
-          console.log('------所有文件上传完成!-------\n')
-          sftp.end()
-          resolve()
-        })
-        .catch(err => {
-          console.error('------上传失败,请检查!-------\n')
-          console.error(err)
-          sftp.end()
-          reject(err)
-        })
-    } else {
-      resolve()
-    }
-  })
+      })
+      .then(res => {
+        if (!failed.length) {
+          console.log('')
+
+          print.success(`所有文件上传完成! 共 ${successful.length} 个文件\n`)
+        } else {
+          print.error(`共 ${failed.length} 个文件上传失败\n`)
+          console.log(failed)
+        }
+        return res
+      })
+      .catch(err => {
+        print.error('上传失败,请检查!\n')
+        print.error(err)
+        return err
+      })
+  } else {
+    return
+  }
 }

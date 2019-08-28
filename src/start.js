@@ -2,21 +2,42 @@ const inquirer = require('inquirer')
 const deploy = require('./deploy')
 const webhook = require('./webhook')
 const autoGit = require('./git')
+const print = require('./util/console')
 
 function getUserMsg() {
-  return inquirer
-    .prompt([{ name: 'msg', message: '本次更新内容：', type: 'input' }])
-    .then(answer => {
-      return answer
-    })
+  return new Promise((resolve, reject) => {
+    let timeout = setTimeout(() => {
+      resolve({})
+    }, 30000)
+    inquirer
+      .prompt([
+        {
+          name: 'msg',
+          message: '本次更新内容：',
+          type: 'input',
+          transformer: val => {
+            if (val) {
+              clearTimeout(timeout)
+            }
+            return val
+          }
+        }
+      ])
+      .then(answer => {
+        clearTimeout(timeout)
+        resolve(answer)
+      })
+  })
 }
 
 module.exports = option => {
   let userData = {
     msg: ''
   }
+  console.log('\n')
   return getUserMsg()
     .then(answer => {
+      console.log('\n')
       userData = answer
       return deploy(option.server)
     })
@@ -27,9 +48,10 @@ module.exports = option => {
       return webhook(userData, option.project, option.webhook)
     })
     .then(() => {
-      console.log('deploy ok!')
+      print.success('项目部署成功!\n')
+      process.exit()
     })
     .catch(err => {
-      console.log(err)
+      print.error(err)
     })
 }
