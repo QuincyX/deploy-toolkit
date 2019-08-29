@@ -1,6 +1,6 @@
 {
   "name": "@quincyx/deploy-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Quincy's sftp deploy toolkit",
   "main": "index.js",
   "scripts": {
